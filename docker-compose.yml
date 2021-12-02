@@ -1,0 +1,46 @@
+---
+services:
+
+  server:
+    image: poc:server
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.server
+    ports:
+      - 5000:5000
+    volumes:
+      - ./server/:/server
+    working_dir: /server
+    environment:
+      - PYTHONPATH=/server
+      - PIPENV_VENV_IN_PROJECT=true
+      - FLASK_APP=run
+      - FLASK_ENV=development
+      - LANG=C.UTF-8
+      - LC_ALL=C.UTF-8
+    command: pipenv run flask run --host=0.0.0.0
+
+  client:
+    image: poc:client
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.client
+    ports:
+      - 3000:3000
+    volumes:
+      - ./client/:/client
+    working_dir: /client
+    command: npm start
+
+  database:
+    image: postgres:11.10
+    volumes:
+      - type: tmpfs
+        target: /var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=poc
+      - POSTGRES_DB=poc_dev
+    ports:
+      - 5432:5432
+    command: -c fsync=off -c log_statement=all

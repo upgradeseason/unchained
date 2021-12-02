@@ -1,0 +1,13 @@
+FROM node:10.24.1-alpine
+     
+RUN mkdir /client
+WORKDIR /client
+
+# Allow running commands from npm packages
+ENV PATH /client/node_modules/.bin:$PATH
+
+# React development server
+EXPOSE 3000
+
+# Allow running arbitrary commands
+CMD ["/bin/bash"]

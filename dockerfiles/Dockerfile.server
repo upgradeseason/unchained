@@ -1,0 +1,31 @@
+FROM ubuntu:18.04
+
+RUN mkdir /server
+WORKDIR /server
+
+# In order to compile and install the Python dependency `psycopg` we
+# need PostgreSQL development headers installed.  We get these headers
+# from a custom apt repository, which means we need to add a custom
+# apt key.  To download the custom apt key, we need to install wget.
+RUN apt-get update
+RUN apt-get install -y build-essential software-properties-common wget
+RUN wget --quiet -O - https://postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 7FCC7D46ACCC4CF8
+RUN add-apt-repository "deb https://apt.postgresql.org/pub/repos/apt bionic-pgdg main"
+RUN apt-get update
+
+# Now we can install apt dependencies, including PostgreSQL headers
+RUN apt-get install --no-install-recommends -y \
+    libssl-dev \
+    python3.6-dev \
+    python3-pip \
+    postgresql-server-dev-11
+
+# Install pipenv so we can manage Python dependencies
+RUN pip3 install pipenv
+
+# Flask development server
+EXPOSE 5000
+
+# Allow running arbitrary commands
+CMD ["/bin/bash"]

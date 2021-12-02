@@ -1,0 +1,215 @@
+diff --git a/QUESTIONS.md b/QUESTIONS.md
+index ee55f00..d5e3e0a 100644
+--- a/QUESTIONS.md
++++ b/QUESTIONS.md
+@@ -122,9 +122,6 @@ Your response can be formatted as a simple text file or even an email.
+ 3. Provide a PR review for [this PR](./prs/PR-2.bugfix-POC-3.diff)
+    solving [this bug](./jira/POC-3.md).
+ 
+-4. What makes a good API?
+-
+-
+ ## Frontend Application Development (JavaScript, React)
+ 
+ 1. The code of the React application is not very DRY.  There are many
+diff --git a/client/src/components/Addresses/AddressDetail.js b/client/src/components/Addresses/AddressDetail.js
+index 5b6f1e2..15f9ecf 100644
+--- a/client/src/components/Addresses/AddressDetail.js
++++ b/client/src/components/Addresses/AddressDetail.js
+@@ -59,7 +59,7 @@ ListsForAddress.propTypes = {
+ 
+ export const AddressDetail = () => {
+   const [requestStatus, setRequestStatus] = useState("none");
+-  const { value, lists } = useSelector(state => state.address);
++  const { value, lists, testnet } = useSelector(state => state.address);
+   const dispatch = useDispatch();
+   const setNotification = message => dispatch(setNotificationAction(message));
+ 
+@@ -79,12 +79,18 @@ export const AddressDetail = () => {
+ 
+   const submitDisabled = () => requestStatus === "pending";
+ 
++  const listsLabel = lists.length !== 1 ? "lists" : "list";
++
+   return (
+     <Grid container direction="column" spacing={2}>
+       <Grid item>
+         <Card>
+           <CardContent>
+             <Typography variant="h5">{value}</Typography>
++            <Typography>{testnet ? "Testnet" : "Mainnet"}</Typography>
++            <Typography>
++              {lists.length} {listsLabel}
++            </Typography>
+           </CardContent>
+           <CardActions>
+             <Button
+diff --git a/client/src/components/Addresses/AddressDetail.test.js b/client/src/components/Addresses/AddressDetail.test.js
+index ab75ac4..4924605 100644
+--- a/client/src/components/Addresses/AddressDetail.test.js
++++ b/client/src/components/Addresses/AddressDetail.test.js
+@@ -22,6 +22,8 @@ describe("AddressDetail", () => {
+     ],
+   };
+ 
++  const testnetAddress = { ...address, testnet: true };
++
+   test("it renders the address", () => {
+     renderWithStore(
+       <MemoryRouter>
+@@ -30,11 +32,22 @@ describe("AddressDetail", () => {
+       { initialState: { address } }
+     );
+     expect(screen.getByText("1abc")).toBeInTheDocument();
++    expect(screen.getByText("Mainnet")).toBeInTheDocument();
+     expect(screen.getByText("List 1")).toBeInTheDocument();
+     expect(screen.getByText("List 2")).toBeInTheDocument();
+     expect(screen.getByText("Delete Address")).toBeInTheDocument();
+   });
+ 
++  test("it renders the testnet address", () => {
++    renderWithStore(
++      <MemoryRouter>
++        <AddressDetail />
++      </MemoryRouter>,
++      { initialState: { address: testnetAddress } }
++    );
++    expect(screen.getByText("Testnet")).toBeInTheDocument();
++  });
++
+   describe("clicking the 'Delete Address' button", () => {
+     let deleteButton;
+     const mockAPIDelete = jest.spyOn(API, "Delete");
+diff --git a/client/src/components/Lists/ListDetail.js b/client/src/components/Lists/ListDetail.js
+index 1a53ef2..9fe2f88 100644
+--- a/client/src/components/Lists/ListDetail.js
++++ b/client/src/components/Lists/ListDetail.js
+@@ -79,12 +79,17 @@ export const ListDetail = () => {
+ 
+   const submitDisabled = () => requestStatus === "pending";
+ 
++  const aLabel = addresses.length !== 1 ? "adresses" : "adress";
++
+   return (
+     <Grid container direction="column" spacing={2}>
+       <Grid item>
+         <Card>
+           <CardContent>
+             <Typography variant="h5">{name}</Typography>
++            <Typography>
++              {addresses.length} {aLabel}
++            </Typography>
+           </CardContent>
+           <CardActions>
+             <Button
+diff --git a/client/src/components/Lists/ListDetail.test.js b/client/src/components/Lists/ListDetail.test.js
+index c1dc816..7814191 100644
+--- a/client/src/components/Lists/ListDetail.test.js
++++ b/client/src/components/Lists/ListDetail.test.js
+@@ -30,6 +30,7 @@ describe("ListDetail", () => {
+       { initialState: { list } }
+     );
+     expect(screen.getByText("list1")).toBeInTheDocument();
++    expect(screen.getByText("2 adresses")).toBeInTheDocument();
+     expect(screen.getByText("addr1")).toBeInTheDocument();
+     expect(screen.getByText("addr2")).toBeInTheDocument();
+     expect(screen.getByText("Delete List")).toBeInTheDocument();
+diff --git a/jira/POC-1.md b/jira/POC-1.md
+new file mode 100644
+index 0000000..bbf63ff
+--- /dev/null
++++ b/jira/POC-1.md
+@@ -0,0 +1,23 @@
++# POC-1: Deleting list does not delete addresses on that list (BUG)
++
++```
++TAGS: backend, live
++```
++
++
++The spec demands that addresses not associated with any list should be
++deleted from the database and not displayed on the address "index"
++page.
++
++When deleting an address from a list, if that address is not on any
++other list, then the address is also deleted.  This is correct.
++
++When deleting an entire list, addresses on that list which are not on
++any other list persist in the database.  This is the bug.
++
++## To Reproduce
++
++1. Create a new list
++2. Add an address to that list
++3. Delete the list
++4. See the address appearing with "0 lists" on the address index page
+diff --git a/jira/POC-2.md b/jira/POC-2.md
+new file mode 100644
+index 0000000..22fd3da
+--- /dev/null
++++ b/jira/POC-2.md
+@@ -0,0 +1,19 @@
++# POC-2: Show and list pages are missing information (BUG)
++
++```
++TAGS: frontend, live
++```
++
++There are several items missing in the UI compared to the spec:
++
++* The list "show" page does not display the address count for the list
++
++* The address "show" page
++
++  * does not display the list count for the address
++
++  * does not display the network type for the address
++
++* Address summaries on the address "index" page do not display the
++  network type of the address
++
+diff --git a/jira/POC-3.md b/jira/POC-3.md
+new file mode 100644
+index 0000000..242ce2a
+--- /dev/null
++++ b/jira/POC-3.md
+@@ -0,0 +1,13 @@
++# POC-3: Bech32 addresses are not accepted by the backend (BUG)
++
++```
++TAGS: backend, live, bitcoin
++```
++
++Bech32 addresses are not accepted by the backend.
++
++## To Reproduce
++
++1. Create a new list
++2. Attempt to add a Bech32 address (e.g. - `bc1qms4wpag0pemty2nk4ahtw4tfs089e0g7yjn5sh`)
++3. See the error message claiming the address is not valid
+diff --git a/jira/POC-4.md b/jira/POC-4.md
+new file mode 100644
+index 0000000..1f05e21
+--- /dev/null
++++ b/jira/POC-4.md
+@@ -0,0 +1,16 @@
++# POC-2: Hitting ENTER on form inputs does not submit forms (BUG)
++
++```
++TAGS: frontend, live
++```
++
++For both creating lists and adding addresses to lists, hitting `ENTER`
++on a form input when the form is in a "valid" state does not
++successfully submit the form.
++
++## To Reproduce
++
++1. Go to the new list form
++2. Focus the "Name" text field input
++3. Type in a valid name and hit `ENTER`
++4. Notice the page reloads and the list has not been created.
+diff --git a/jira/jira.zip b/jira/jira.zip
+deleted file mode 100644
+index 7407eea..0000000
+Binary files a/jira/jira.zip and /dev/null differ

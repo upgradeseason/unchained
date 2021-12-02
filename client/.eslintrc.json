@@ -1,0 +1,41 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true,
+        "jest/globals": true
+    },
+    "extends": [
+        "plugin:react/recommended",
+        "plugin:react-hooks/recommended",
+        "airbnb",
+        "prettier"
+    ],
+    "parser": "babel-eslint",
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        },
+        "ecmaVersion": 12,
+        "sourceType": "module"
+    },
+    "plugins": [
+        "react",
+        "jest"
+    ],
+    "ignorePatterns": ["./node_modules/**", "./build/**"],
+    "rules": {
+        "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
+        "react/state-in-constructor": "off",
+        "react/prop-types": "off",
+        "no-console": "off",
+        "import/prefer-default-export": "off"
+    },
+    "overrides": [
+        {
+            "files": ["*.test.js", "*.test.jsx"],
+            "rules": {
+                "react/react-in-jsx-scope": "off"
+            }
+        }
+    ]
+}

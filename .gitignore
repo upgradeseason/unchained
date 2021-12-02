@@ -1,0 +1,7 @@
+server/.venv/*
+client/node_modules/*
+*.pyc
+.coverage
+client/cypress/screenshots/*
+client/cypress/videos/*
+build/*
