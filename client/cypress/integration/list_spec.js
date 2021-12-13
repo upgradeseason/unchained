@@ -7,9 +7,9 @@ describe("Lists", () => {
 
   // Reset the database before each test case
   beforeEach(() => {
-    cy.exec("npm run db:reset");
+    cy.exec("npm run db:reset", {env: {PATH: "//home/king/.nvm/versions/node/v17.1.0/bin/npm"},
+                                              failOnNonZeroExit: false});
   });
-
   describe("List creation", () => {
     it("can create multiple lists with different address types", () => {
       // Create 3 different lists

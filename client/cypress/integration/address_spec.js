@@ -7,7 +7,8 @@ describe("Addresses", () => {
 
   // Reset and re-seed list data
   beforeEach(() => {
-    cy.exec("npm run db:reset");
+    cy.exec("npm run db:reset", {env: {PATH: "//home/king/.nvm/versions/node/v17.1.0/bin/npm"},
+                                              failOnNonZeroExit: false});
 
     cy.createList(
       "List A", [
