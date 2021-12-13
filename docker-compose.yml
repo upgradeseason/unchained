@@ -1,4 +1,5 @@
----
+version: "3.2"
+
 services:
 
   server:
@@ -42,5 +43,5 @@ services:
       - POSTGRES_USER=poc
       - POSTGRES_DB=poc_dev
     ports:
-      - 5432:5432
+      - "8080:80"
     command: -c fsync=off -c log_statement=all
